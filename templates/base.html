@@ -1,0 +1,48 @@
+<!--
+  templateType: none
+-->
+{% set debug = true %}
+{%- if not macros -%} 
+    {%- import "../macros.html" as macros -%} 
+{%- endif -%}
+<!doctype html>
+<html lang="{{ html_lang }}" {{ html_lang_dir }} class="no-js dark">
+    <head>
+        <!-- test -->
+        {#{ macros.load_one_instance_only(get_asset_url("../assets/css/footer.css") ) }#}
+        <meta charset="utf-8">
+        <title>{{ content.html_title }}</title>
+        {% if site_settings.favicon_src %}<link rel="shortcut icon" href="{{ site_settings.favicon_src }}" />{% endif %}
+        <meta name="description" content="{{ content.meta_description }}">
+
+        <style id="css_preload">body{display:none;}</style>
+        <link rel="preload" href="{{ get_asset_url('../assets/css/main.css') }}" as="style" onload="this.onload=null;this.rel='stylesheet'">
+        <noscript><link rel="stylesheet" href="{{ get_asset_url('../assets/css/main.css') }}" ></noscript>
+
+        {{ standard_header_includes|replace("<script", "<script defer") }}
+    </head>
+    <body class="{{ builtin_body_classes }}">
+        <a href="#main" class="skip-content">Skip to content</a>
+        <input id="check-mobile-menu" type="checkbox" hidden />
+        <header class="page-header">
+            {% block header, no_wrapper=True %}
+            {% global_partial path='./partials/header.html' %}
+            {% endblock header %}
+        </header>
+        
+        <main id="main" class="page-body">
+        {% block body %}
+            {% include "./partials/components.html" %}
+        {% endblock body %}
+        </main>
+        
+        
+        <footer class="page-footer">
+        {% block footer %}
+            {% global_partial path='./partials/footer.html' %}
+        {% endblock footer %}
+        </footer>
+        {{ require_js(get_asset_url("../assets/js/main.js") ~ "?test", {"async":true}) }}
+        {{ standard_footer_includes|replace("<script", "<script defer") }}
+    </body>
+</html>

@@ -59,3 +59,4 @@ class FragmentCacheExtension(Extension):
         rv = caller()
         self.environment.fragment_cache.add(key, rv, timeout)
         return rv
+
