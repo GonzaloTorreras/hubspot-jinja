@@ -1,4 +1,4 @@
-from os.path import dirname, basename, isfile, join
+from os import path, walk, getcwd
 import glob
 
 from jinja2 import Environment
@@ -47,18 +47,30 @@ from .hubspot.tags.videoplayer import video_playerExtension
 from .hubspot.tags.widget_container import widget_containerExtension
 
 class hsJinja(object):
-    def __init__(self,templatesFolder = "templates"):
-        self.template_folder = templatesFolder
-        self.env = self.loadJinjaEnv()
+    def __init__(self,templates,output):
+        self.template_folder = templates
+        self.templates = self.listTemplates()
+        print("List of templates found:", self.templates)
 
+        self.env = self.loadJinjaEnv()
+        print("Jinja2 ENV loaded!")
+        print(self.env.list_templates())
     def main(self):
         print("Running!")
+        
+        for template in self.templates:
+            self.renderJinja(template)
+
+    def listTemplates(self):
+        
+        files = list()
+        for (dirpath,dirnames,filenames) in walk(self.template_folder):
+            files += [path.join(dirpath.replace(self.template_folder,""),file) for file in filenames]
+        return files
 
     def loadJinjaEnv(self):
         env = Environment(
-            loader=PackageLoader('hsJinja',{
-                "template_folder":  self.template_folder
-            }),
+            loader=PackageLoader('hsJinja',self.template_folder),
             extensions=["jinja2.ext.do",
                         blog_commentsExtension,
                         blog_social_sharingExtension,
@@ -111,6 +123,14 @@ class hsJinja(object):
 
         return env
 
-    def render(self,page):
-        pass
+    def renderJinja(self,template="base.html"):
+        try:
+            render = self.env.get_template(template)
+        except:
+            import sys
+            print("Error, can't find the template: " + template)
+            print(sys.exc_info())
+            return False
+        
+
     

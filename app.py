@@ -1,5 +1,10 @@
+import os
+
 from hsJinja.hsJinja import hsJinja
 
-test = hsJinja()
+TEMPLATES = os.getcwd() + "templates"
+OUTPUT = "output"
+print(TEMPLATES)
+test = hsJinja(TEMPLATES,OUTPUT)
 
-#print(test.extensions)
+test.main()
