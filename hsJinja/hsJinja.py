@@ -2,8 +2,12 @@ from os import path, walk, getcwd
 import glob
 
 from jinja2 import Environment
-from jinja2.loaders import PackageLoader
+#from jinja2.loaders import PackageLoader
+from jinja2.loaders import FileSystemLoader
 from jinja2.utils import select_autoescape
+
+from jinja2 import TemplateNotFound
+from jinja2 import TemplateSyntaxError
 
 from .hubspot.tags.blog_comments import blog_commentsExtension
 from .hubspot.tags.blog_social_sharing import blog_social_sharingExtension
@@ -17,6 +21,7 @@ from .hubspot.tags.email_subscriptions import email_subscriptionsExtension
 from .hubspot.tags.email_subscriptions_confirmation import email_subscriptions_confirmationExtension
 from .hubspot.tags.form import formExtension
 from .hubspot.tags.gallery import galleryExtension
+from .hubspot.tags.global_partial import global_partialExtension
 from .hubspot.tags.header import headerExtension
 from .hubspot.tags.icon import iconExtension
 from .hubspot.tags.image_src import image_srcExtension
@@ -52,9 +57,11 @@ class hsJinja(object):
         self.templates = self.listTemplates()
         print("List of templates found:", self.templates)
 
+        self.output = output
+
         self.env = self.loadJinjaEnv()
         print("Jinja2 ENV loaded!")
-        print(self.env.list_templates())
+        #print(self.env.list_templates())
     def main(self):
         print("Running!")
         
@@ -70,7 +77,8 @@ class hsJinja(object):
 
     def loadJinjaEnv(self):
         env = Environment(
-            loader=PackageLoader('hsJinja',self.template_folder),
+            #loader=PackageLoader('hsJinja',self.template_folder),
+            loader=FileSystemLoader(searchpath=self.template_folder),
             extensions=["jinja2.ext.do",
                         blog_commentsExtension,
                         blog_social_sharingExtension,
@@ -84,6 +92,7 @@ class hsJinja(object):
                         email_subscriptions_confirmationExtension,
                         formExtension,
                         galleryExtension,
+                        global_partialExtension,
                         headerExtension,
                         iconExtension,
                         image_srcExtension,
@@ -120,17 +129,22 @@ class hsJinja(object):
         env.trim_blocks = True
         env.lstrip_blocks = True
         env.strip_trailing_newlines = True
-
+        print(self.template_folder)
         return env
 
     def renderJinja(self,template="base.html"):
         try:
             render = self.env.get_template(template)
-        except:
+        except TemplateNotFound:
             import sys
             print("Error, can't find the template: " + template)
             print(sys.exc_info())
             return False
+        except TemplateSyntaxError as e:
+            print(
+                "Jinja2 template syntax error during render: {}:{} error: {}".
+                format(e.filename, e.lineno, e.message))
+            raise e
         
 
     
